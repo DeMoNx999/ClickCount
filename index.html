@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Click Counter Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+
+    #clickBox {
+      width: 60vw;
+      max-width: 300px;
+      height: 60vw;
+      max-height: 300px;
+      background-color: gray;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 10px;
+      transition: transform 0.1s;
+    }
+
+    #clickBox.bounce {
+      animation: bounce 0.2s;
+    }
+
+    @keyframes bounce {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    #scoreboard {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    #startBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      #clickBox {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Click Counter Game</h1>
+  <button id="startBtn">Start</button>
+  <div id="clickBox">Click Me</div>
+  <div id="scoreboard">
+    <p>Time Left: <span id="timeLeft">30</span> seconds</p>
+    <p>Clicks: <span id="clickCount">0</span></p>
+    <p>High Score: <span id="highScore">0</span></p>
+  </div>
+
+  <!-- Sound Effects -->
+  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+  <audio id="endSound" src="https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg" preload="auto"></audio>
+
+  <script>
+    const clickBox = document.getElementById('clickBox');
+    const timeLeftDisplay = document.getElementById('timeLeft');
+    const clickCountDisplay = document.getElementById('clickCount');
+    const highScoreDisplay = document.getElementById('highScore');
+    const startBtn = document.getElementById('startBtn');
+    const clickSound = document.getElementById('clickSound');
+    const endSound = document.getElementById('endSound');
+  
+    let clickCount = 0;
+    let timeLeft = 30;
+    let timer;
+    let gameActive = false;
+  
+    function loadHighScore() {
+      return parseInt(localStorage.getItem('highScore')) || 0;
+    }
+  
+    function updateHighScore(newScore) {
+      const currentHigh = loadHighScore();
+      if (newScore > currentHigh) {
+        localStorage.setItem('highScore', newScore);
+        highScoreDisplay.textContent = newScore;
+      } else {
+        highScoreDisplay.textContent = currentHigh;
+      }
+    }
+  
+    function startGame() {
+      clickCount = 0;
+      timeLeft = 30;
+      gameActive = true;
+      clickCountDisplay.textContent = clickCount;
+      timeLeftDisplay.textContent = timeLeft;
+      highScoreDisplay.textContent = loadHighScore();
+  
+      clearInterval(timer); // clear any existing interval
+  
+      timer = setInterval(() => {
+        timeLeft--;
+        timeLeftDisplay.textContent = timeLeft;
+  
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          gameActive = false;
+          endSound.play();
+          updateHighScore(clickCount);
+        }
+      }, 1000);
+    }
+  
+    clickBox.addEventListener('click', () => {
+      if (gameActive) {
+        clickCount++;
+        clickCountDisplay.textContent = clickCount;
+        clickSound.play();
+  
+        // Bounce animation
+        clickBox.classList.remove('bounce');
+        void clickBox.offsetWidth;
+        clickBox.classList.add('bounce');
+      }
+    });
+  
+    startBtn.addEventListener('click', startGame);
+  
+    // Set high score on load
+    highScoreDisplay.textContent = loadHighScore();
+  </script>
+  
+</body>
+</html>
